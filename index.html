@@ -110,6 +110,26 @@
             background-size: 200% 200%;
             animation: gradientAnimation 10s ease infinite;
         }
+
+        /* Mobile navigation menu overlay */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-primary);
+            z-index: 60;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        .mobile-menu.open {
+            transform: translateX(0);
+        }
     </style>
 </head>
 <body>
@@ -117,7 +137,13 @@
     <!-- Navbar -->
     <nav class="sticky top-0 z-50 bg-[var(--bg-primary)]/50 backdrop-blur-md transition-all duration-300">
         <div class="container mx-auto flex items-center justify-center p-4">
-            <div class="flex items-center space-x-2 sm:space-x-4 md:space-x-6 text-sm font-medium">
+            <!-- Hamburger menu for mobile view -->
+            <button id="mobile-menu-toggle" class="md:hidden p-2 rounded-full bg-[var(--card-bg)] hover:bg-[var(--card-border)] transition-colors duration-300">
+                <svg class="w-6 h-6 text-[var(--text-secondary)]" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+                </svg>
+            </button>
+            <div class="hidden md:flex items-center space-x-2 sm:space-x-4 md:space-x-6 text-sm font-medium">
                 <a href="#about" class="inline-block nav-link px-2 sm:px-4 py-2 rounded-full border border-transparent hover:border-[var(--accent-color)]/50 hover:bg-blue-700/10 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 flex items-center space-x-2 text-[var(--text-secondary)] hover:text-[var(--accent-color)]">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
@@ -149,6 +175,25 @@
             </div>
         </div>
     </nav>
+    
+    <!-- Mobile navigation menu -->
+    <div id="mobile-menu" class="mobile-menu">
+        <button id="mobile-menu-close" class="absolute top-4 right-4 p-2 rounded-full bg-[var(--card-bg)] hover:bg-[var(--card-border)] transition-colors duration-300">
+            <svg class="w-6 h-6 text-[var(--text-secondary)]" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+        </button>
+        <div class="flex flex-col items-center space-y-8 text-xl font-medium">
+            <a href="#about" class="mobile-nav-link text-[var(--text-secondary)] hover:text-[var(--accent-color)] transition-colors duration-300">About</a>
+            <a href="#skills" class="mobile-nav-link text-[var(--text-secondary)] hover:text-[var(--accent-color)] transition-colors duration-300">Skills</a>
+            <a href="#projects" class="mobile-nav-link text-[var(--text-secondary)] hover:text-[var(--accent-color)] transition-colors duration-300">Projects</a>
+            <a href="#contact" class="mobile-nav-link text-[var(--text-secondary)] hover:text-[var(--accent-color)] transition-colors duration-300">Contact</a>
+            <!-- Dark/Light Mode Toggle Button in mobile menu -->
+            <button id="mobile-theme-toggle" class="p-2 rounded-full bg-[var(--card-bg)] hover:bg-[var(--card-border)] transition-colors duration-300 mt-4">
+                <span id="mobile-theme-icon" class="text-xl">🌙</span>
+            </button>
+        </div>
+    </div>
 
     <main>
         <!-- Hero Section -->
@@ -295,6 +340,25 @@
             });
         });
 
+        // Mobile menu toggle
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileMenuClose = document.getElementById('mobile-menu-close');
+        
+        mobileMenuToggle.addEventListener('click', () => {
+            mobileMenu.classList.add('open');
+        });
+
+        mobileMenuClose.addEventListener('click', () => {
+            mobileMenu.classList.remove('open');
+        });
+
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('open');
+            });
+        });
+
         // Intersection Observer for the fade-in effect on sections
         const revealSections = document.querySelectorAll('.reveal-section');
 
@@ -323,7 +387,9 @@
 
         // Dark/Light mode toggle functionality
         const themeToggle = document.getElementById('theme-toggle');
+        const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
         const themeIcon = document.getElementById('theme-icon');
+        const mobileThemeIcon = document.getElementById('mobile-theme-icon');
         const body = document.body;
 
         const currentTheme = localStorage.getItem('theme');
@@ -331,6 +397,7 @@
             body.classList.add(currentTheme);
             if (currentTheme === 'light-theme') {
                 themeIcon.textContent = '☀️';
+                mobileThemeIcon.textContent = '☀️';
             }
         } else {
             // Default to dark theme
@@ -338,18 +405,28 @@
         }
 
         themeToggle.addEventListener('click', () => {
+            toggleTheme();
+        });
+
+        mobileThemeToggle.addEventListener('click', () => {
+            toggleTheme();
+        });
+
+        function toggleTheme() {
             if (body.classList.contains('dark-theme')) {
                 body.classList.remove('dark-theme');
                 body.classList.add('light-theme');
                 themeIcon.textContent = '☀️';
+                mobileThemeIcon.textContent = '☀️';
                 localStorage.setItem('theme', 'light-theme');
             } else {
                 body.classList.remove('light-theme');
                 body.classList.add('dark-theme');
                 themeIcon.textContent = '🌙';
+                mobileThemeIcon.textContent = '🌙';
                 localStorage.setItem('theme', 'dark-theme');
             }
-        });
+        }
     </script>
 
 </body>
